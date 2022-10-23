@@ -15,7 +15,7 @@ int main(int argc, char * argv[])
   emergency_button::WiredEmergencyButton wiredButton;
   emergency_button::WirelessEmergencyButton wirelessButton;
   wiredButton.connect();
-  wirelessButton.connect("/dev/ttyUSB0");
+  wirelessButton.connect("/dev/wireless_emergency_button");
 
   signal(SIGINT, handler);
   while(loop)
