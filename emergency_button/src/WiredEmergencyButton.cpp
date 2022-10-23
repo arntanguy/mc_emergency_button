@@ -43,7 +43,7 @@ void WiredEmergencyButton::connect()
 
     if(!ret || (dev_num == 0))
     {
-      std::cout << "failed to open wired/wireless emergency button";
+      std::cout << "failed to open wired emergency button";
       connected_ = false;
       return;
     }
