@@ -5,6 +5,7 @@
 #pragma once
 
 #include <mc_control/GlobalPlugin.h>
+#include <emergency_button/EmergencyButton.h>
 
 namespace mc_plugin
 {
@@ -24,6 +25,7 @@ struct EmergencyButtonPlugin : public mc_control::GlobalPlugin
   ~EmergencyButtonPlugin() override;
 
 private:
+  std::unique_ptr<emergency_button::EmergencyButton> emergencyButton_;
 };
 
 } // namespace mc_plugin

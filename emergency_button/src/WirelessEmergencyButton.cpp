@@ -36,9 +36,9 @@ void WirelessEmergencyButton::connect(const std::string & serial_port)
     int fd = open(serial_port.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
     if(fd < 0)
     {
+      connected_ = false;
       close(fd);
       std::cerr << "No wireless button found" << std::endl;
-      connected_ = false;
       return;
     }
     else

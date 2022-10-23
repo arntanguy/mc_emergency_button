@@ -7,7 +7,7 @@ struct EmergencyButton
 {
   inline bool emergency() const noexcept
   {
-    return emergency_;
+    return !connected_ || emergency_;
   }
 
   inline bool connected() const noexcept

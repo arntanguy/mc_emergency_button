@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
-set(CMAKE_CXX_VERSION 17)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 17)
 
 project(EmergencyButton LANGUAGES CXX C VERSION 1.0.0)
 option(BUILD_PLUGIN "Build the EmergencyButtonPlugin" ON)

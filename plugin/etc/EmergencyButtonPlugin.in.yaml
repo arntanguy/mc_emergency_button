@@ -1,1 +1,3 @@
----
+gui: true
+type: "wireless"
+port: "/dev/ttyUSB0"

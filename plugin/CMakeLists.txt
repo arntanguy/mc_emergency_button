@@ -1,9 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
-
-project(EmergencyButtonPlugin LANGUAGES CXX VERSION 1.0.0)
-
-include(CTest)
-enable_testing()
+set(AUTOLOAD_EmergencyButtonPlugin_PLUGIN false CACHE BOOL "When true the plugin will always be loaded")
 
 # Find mc_rtc if we are not building inside mc_rtc itself
 if(NOT TARGET mc_rtc::mc_control)
@@ -24,7 +19,4 @@ set(plugin_HDR
 
 # The add_plugin macro is provided by mc_rtc
 add_plugin(EmergencyButtonPlugin "${plugin_SRC}" "${plugin_HDR}")
-
-if(BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
+target_link_libraries(EmergencyButtonPlugin PUBLIC emergency_button)
