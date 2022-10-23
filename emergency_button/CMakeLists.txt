@@ -23,6 +23,7 @@ add_library(emergency_button SHARED "${emergency_button_SRC}" "${emergency_butto
 target_include_directories(emergency_button PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 target_link_libraries(emergency_button PUBLIC emergency_button_usbio)
 target_link_libraries(emergency_button PUBLIC Threads::Threads)
+target_link_libraries(emergency_button PUBLIC Boost::filesystem)
 
 install(TARGETS emergency_button
   ARCHIVE DESTINATION lib

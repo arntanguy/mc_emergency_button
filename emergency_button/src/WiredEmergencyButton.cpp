@@ -36,14 +36,14 @@ void WiredEmergencyButton::connect()
 {
   auto button_id = USBIO_DEFAULT_BUTTON_ID;
   th_ = std::thread([button_id, this]() {
-    std::cout << "Looking for non-wireless button..." << std::endl;
+    std::cout << "[wired] Looking for non-wireless button..." << std::endl;
     int dev_num;
     usbio_t hd[MAX_USBIO2_NUM];
     bool ret = usbio_init(hd, &dev_num, false);
 
     if(!ret || (dev_num == 0))
     {
-      std::cout << "failed to open wired emergency button";
+      std::cerr << "[wired] Failed to open wired emergency button" << std::endl;
       connected_ = false;
       return;
     }
@@ -51,7 +51,7 @@ void WiredEmergencyButton::connect()
     {
       connected_ = true;
     }
-    std::cout << "found wired emergency button (number of button = " << dev_num << ")" << std::endl;
+    std::cout << "[wired] Found wired emergency button (number of button = " << dev_num << ")" << std::endl;
 
     int usb_id = -1;
     int is_on[2];
@@ -69,7 +69,7 @@ void WiredEmergencyButton::connect()
         is_on[1] = 0;
         led_on = 0;
         led_off = 1;
-        std::cout << "detect user customized button id=" << id << std::endl;
+        std::cout << "[wired] Detected user customized button id=" << id << std::endl;
       }
     }
 
@@ -82,7 +82,7 @@ void WiredEmergencyButton::connect()
       bool button = false;
       if(!usbio_read(hd[usb_id], &recv))
       {
-        std::cerr << "Could not read button";
+        std::cerr << "[wired] Could not read button" << std::endl;
         button = true;
       }
       else

@@ -1,3 +1,4 @@
+#include <boost/filesystem.hpp>
 #include <emergency_button/WirelessEmergencyButton.h>
 #include <iostream>
 
@@ -27,10 +28,23 @@ WirelessEmergencyButton::~WirelessEmergencyButton()
   }
 }
 
-void WirelessEmergencyButton::connect(const std::string & serial_port)
+void WirelessEmergencyButton::connect(const std::string & serial_port_)
 {
-  th_ = std::thread([serial_port, this]() {
-    std::cout << "Looking wireless button " << serial_port << " ..." << std::endl;
+
+  th_ = std::thread([serial_port_, this]() {
+    std::cout << "[wireless] Looking wireless button " << serial_port_ << " ..." << std::endl;
+    auto serial_port = std::string{};
+    try
+    {
+      serial_port = boost::filesystem::canonical(serial_port_).string();
+    }
+    catch(...)
+    {
+      connected_ = false;
+      std::cerr << "[wireless] Serial port " << serial_port_ << " is neither a device handle nor a symbolic link"
+                << std::endl;
+      return;
+    }
 
     // Try to find wireless button
     int fd = open(serial_port.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -38,12 +52,12 @@ void WirelessEmergencyButton::connect(const std::string & serial_port)
     {
       connected_ = false;
       close(fd);
-      std::cerr << "No wireless button found" << std::endl;
+      std::cerr << "[wireless] No wireless button found" << std::endl;
       return;
     }
     else
     {
-      std::cout << "Found wireless emergency button: " << serial_port << std::endl;
+      std::cout << "[wireless] Found wireless emergency button: " << serial_port << std::endl;
       connected_ = true;
     }
 

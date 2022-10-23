@@ -6,6 +6,7 @@ project(EmergencyButton LANGUAGES CXX C VERSION 1.0.0)
 option(BUILD_PLUGIN "Build the EmergencyButtonPlugin" ON)
 
 find_package(Threads REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem)
 
 add_subdirectory(emergency_button)
 
