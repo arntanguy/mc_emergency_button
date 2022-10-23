@@ -25,7 +25,7 @@ WiredEmergencyButton::WiredEmergencyButton() {}
 
 WiredEmergencyButton::~WiredEmergencyButton()
 {
-  running_ = false;
+  connected_ = false;
   if(th_.joinable())
   {
     th_.join();
@@ -43,7 +43,13 @@ void WiredEmergencyButton::connect()
 
     if(!ret || (dev_num == 0))
     {
-      throw std::runtime_error("failed to open wired/wireless emergency button");
+      std::cout << "failed to open wired/wireless emergency button";
+      connected_ = false;
+      return;
+    }
+    else
+    {
+      connected_ = true;
     }
     std::cout << "found wired emergency button (number of button = " << dev_num << ")" << std::endl;
 
@@ -70,7 +76,7 @@ void WiredEmergencyButton::connect()
     bool button_prev = false;
     int c = 0;
 
-    while(running_)
+    while(connected_)
     {
       uint8_t recv;
       bool button = false;

@@ -5,11 +5,11 @@
 
 namespace emergency_button
 {
-struct WiredEmergencyButton : public EmergencyButton
+struct WirelessEmergencyButton : public EmergencyButton
 {
-  WiredEmergencyButton();
-  virtual ~WiredEmergencyButton();
-  void connect();
+  WirelessEmergencyButton();
+  virtual ~WirelessEmergencyButton();
+  void connect(const std::string & serial_port);
 
 protected:
   std::thread th_;

@@ -10,7 +10,13 @@ struct EmergencyButton
     return emergency_;
   }
 
+  inline bool connected() const noexcept
+  {
+    return connected_;
+  }
+
 protected:
   std::atomic<bool> emergency_{true};
+  std::atomic<bool> connected_{false};
 };
 } // namespace emergency_button

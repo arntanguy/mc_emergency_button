@@ -5,11 +5,13 @@ target_link_libraries(emergency_button_usbio PUBLIC usb)
 
 set(emergency_button_SRC
   src/WiredEmergencyButton.cpp
+  src/WirelessEmergencyButton.cpp
   )
 
 set(emergency_button_HDR
   include/emergency_button/EmergencyButton.h
   include/emergency_button/WiredEmergencyButton.h
+  include/emergency_button/WirelessEmergencyButton.h
   )
 
 add_library(emergency_button SHARED "${emergency_button_SRC}" "${emergency_button_HDR}")
