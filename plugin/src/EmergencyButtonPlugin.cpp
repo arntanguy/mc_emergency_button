@@ -26,6 +26,7 @@ void EmergencyButtonPlugin::init(mc_control::MCGlobalController & controller, co
     wiredButton->connect();
     emergencyButton_.reset(wiredButton);
   }
+  emergencyButton_->required(config("required", true));
 
   auto & ctl = controller.controller();
   ctl.datastore().make<bool>("EmergencyButtonPlugin", true);
