@@ -7,24 +7,25 @@
 namespace mc_plugin
 {
 
-EmergencyButtonPlugin::~EmergencyButtonPlugin() = default;
+EmergencyButtonPlugin::~EmergencyButtonPlugin()
+{
+  mc_rtc::log::info("EmergencyButtonPlugin destroyed");
+}
 
 void EmergencyButtonPlugin::init(mc_control::MCGlobalController & controller, const mc_rtc::Configuration & config)
 {
-  mc_rtc::log::info("EmergencyButtonPlugin::init called with configuration:\n{}", config.dump(true, true));
-
   if(config("type", std::string{"wireless"}) == "wireless")
   {
-    auto wirelessButton = new emergency_button::WirelessEmergencyButton{};
+    auto wirelessButton = std::make_shared<emergency_button::WirelessEmergencyButton>();
     wirelessButton->connect(config("port", std::string{"/dev/ttyUSB0"}));
-    emergencyButton_.reset(wirelessButton);
+    emergencyButton_ = wirelessButton;
     mc_rtc::log::info("[EmergencyButtonPlugin] Using wireless button");
   }
   else
   {
-    auto wiredButton = new emergency_button::WiredEmergencyButton{};
+    auto wiredButton = std::make_shared<emergency_button::WiredEmergencyButton>();
     wiredButton->connect();
-    emergencyButton_.reset(wiredButton);
+    emergencyButton_ = wiredButton;
   }
   emergencyButton_->required(config("required", true));
 
@@ -40,6 +41,7 @@ void EmergencyButtonPlugin::init(mc_control::MCGlobalController & controller, co
                           mc_rtc::gui::Label("Connected", [this]() { return emergencyButton_->connected(); }),
                           mc_rtc::gui::Label("Emergency", [this]() { return emergencyButton_->emergency(); }));
   }
+  mc_rtc::log::info("EmergencyButtonPlugin::initialized with configuration:\n{}", config.dump(true, true));
 }
 
 void EmergencyButtonPlugin::reset(mc_control::MCGlobalController & controller)

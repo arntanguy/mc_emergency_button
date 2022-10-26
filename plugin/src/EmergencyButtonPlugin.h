@@ -25,7 +25,7 @@ struct EmergencyButtonPlugin : public mc_control::GlobalPlugin
   ~EmergencyButtonPlugin() override;
 
 private:
-  std::unique_ptr<emergency_button::EmergencyButton> emergencyButton_;
+  std::shared_ptr<emergency_button::EmergencyButton> emergencyButton_;
 };
 
 } // namespace mc_plugin
