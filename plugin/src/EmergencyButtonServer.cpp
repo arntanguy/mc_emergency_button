@@ -1,0 +1,61 @@
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
+
+#include <mc_rtc/Configuration.h>
+
+#include <emergency_button/EmergencyButton.h>
+#include <emergency_button/WiredEmergencyButton.h>
+#include <emergency_button/WirelessEmergencyButton.h>
+
+#include "EmergencyButtonData.h"
+
+namespace bip = boost::interprocess;
+
+int main(int argc, char * argv[])
+{
+  if(argc < 2)
+  {
+    mc_rtc::log::error("[usage] {} [config]", argv[0]);
+    return 1;
+  }
+  auto config = mc_rtc::Configuration(argv[1]);
+  std::shared_ptr<emergency_button::EmergencyButton> button;
+  if(config("type", std::string{"wireless"}) == "wireless")
+  {
+    std::string port = config("port", std::string("/dev/ttyUSB0"));
+    mc_rtc::log::info("[EmergencyButtonServer] Connected to wireless button via {}", port);
+    auto wButton = std::make_shared<emergency_button::WirelessEmergencyButton>();
+    wButton->connect(port);
+    button = wButton;
+  }
+  else
+  {
+    mc_rtc::log::info("[EmergencyButtonServer] Connected to wired button");
+    auto wButton = std::make_shared<emergency_button::WiredEmergencyButton>();
+    wButton->connect();
+    button = wButton;
+  }
+  button->required(config("required", true));
+
+  bip::shared_memory_object shm_obj(bip::open_or_create, "emergency_button_shm", bip::read_write);
+  shm_obj.truncate(sizeof(EmergencyButtonData));
+
+  bip::mapped_region region(shm_obj, bip::read_write);
+
+  EmergencyButtonData data;
+  std::memcpy(region.get_address(), &data, sizeof(EmergencyButtonData));
+
+  while(button->connected())
+  {
+    data.connected = button->connected();
+    data.state = button->emergency();
+    std::memcpy(region.get_address(), &data, sizeof(EmergencyButtonData));
+  }
+
+  mc_rtc::log::critical("Connection to the emergency button lost");
+  data.connected = false;
+  data.state = true;
+  std::memcpy(region.get_address(), &data, sizeof(EmergencyButtonData));
+
+  return 0;
+}

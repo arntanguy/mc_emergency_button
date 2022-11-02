@@ -5,7 +5,13 @@
 #pragma once
 
 #include <mc_control/GlobalPlugin.h>
-#include <emergency_button/EmergencyButton.h>
+
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
+
+#include "EmergencyButtonData.h"
+
+namespace bip = boost::interprocess;
 
 namespace mc_plugin
 {
@@ -25,7 +31,10 @@ struct EmergencyButtonPlugin : public mc_control::GlobalPlugin
   ~EmergencyButtonPlugin() override;
 
 private:
-  std::shared_ptr<emergency_button::EmergencyButton> emergencyButton_;
+  bip::shared_memory_object shm_obj_;
+  bip::mapped_region shm_region_;
+  EmergencyButtonData * data_;
+  bool with_gui_ = true;
 };
 
 } // namespace mc_plugin

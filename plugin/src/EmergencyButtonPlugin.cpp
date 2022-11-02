@@ -1,8 +1,9 @@
 #include "EmergencyButtonPlugin.h"
 
 #include <mc_control/GlobalPluginMacros.h>
-#include <emergency_button/WiredEmergencyButton.h>
-#include <emergency_button/WirelessEmergencyButton.h>
+
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
 
 namespace mc_plugin
 {
@@ -14,39 +15,27 @@ EmergencyButtonPlugin::~EmergencyButtonPlugin()
 
 void EmergencyButtonPlugin::init(mc_control::MCGlobalController & controller, const mc_rtc::Configuration & config)
 {
-  if(config("type", std::string{"wireless"}) == "wireless")
-  {
-    auto wirelessButton = std::make_shared<emergency_button::WirelessEmergencyButton>();
-    wirelessButton->connect(config("port", std::string{"/dev/ttyUSB0"}));
-    emergencyButton_ = wirelessButton;
-    mc_rtc::log::info("[EmergencyButtonPlugin] Using wireless button");
-  }
-  else
-  {
-    auto wiredButton = std::make_shared<emergency_button::WiredEmergencyButton>();
-    wiredButton->connect();
-    emergencyButton_ = wiredButton;
-  }
-  emergencyButton_->required(config("required", true));
-
-  auto & ctl = controller.controller();
-  ctl.datastore().make<bool>("EmergencyButtonPlugin", true);
-  ctl.datastore().make_call("EmergencyButtonPlugin::Connected",
-                            [this]() -> bool { return emergencyButton_->connected(); });
-  ctl.datastore().make_call("EmergencyButtonPlugin::State", [this]() -> bool { return emergencyButton_->emergency(); });
-
-  if(config("gui", true))
-  {
-    ctl.gui()->addElement(this, {"EmergencyButton"},
-                          mc_rtc::gui::Label("Connected", [this]() { return emergencyButton_->connected(); }),
-                          mc_rtc::gui::Label("Emergency", [this]() { return emergencyButton_->emergency(); }));
-  }
-  mc_rtc::log::info("EmergencyButtonPlugin::initialized with configuration:\n{}", config.dump(true, true));
+  config("gui", with_gui_);
+  reset(controller);
 }
 
 void EmergencyButtonPlugin::reset(mc_control::MCGlobalController & controller)
 {
-  mc_rtc::log::info("EmergencyButtonPlugin::reset called");
+  shm_obj_ = bip::shared_memory_object(bip::open_or_create, "emergency_button_shm", bip::read_only);
+  shm_region_ = bip::mapped_region(shm_obj_, bip::read_only);
+  data_ = reinterpret_cast<EmergencyButtonData *>(shm_region_.get_address());
+
+  auto & ctl = controller.controller();
+  ctl.datastore().make<bool>("EmergencyButtonPlugin", true);
+  ctl.datastore().make_call("EmergencyButtonPlugin::Connected", [this]() -> bool { return data_->connected; });
+  ctl.datastore().make_call("EmergencyButtonPlugin::State", [this]() -> bool { return data_->state; });
+
+  if(with_gui_)
+  {
+    ctl.gui()->addElement(this, {"EmergencyButton"},
+                          mc_rtc::gui::Label("Connected", [this]() { return data_->connected; }),
+                          mc_rtc::gui::Label("Emergency", [this]() { return data_->state; }));
+  }
 }
 
 void EmergencyButtonPlugin::before(mc_control::MCGlobalController &) {}

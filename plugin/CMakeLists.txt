@@ -17,6 +17,11 @@ set(plugin_HDR
   src/EmergencyButtonPlugin.h
 )
 
+add_executable(EmergencyButtonServer src/EmergencyButtonServer.cpp)
+target_link_libraries(EmergencyButtonServer PUBLIC emergency_button mc_rtc::mc_control rt)
+
 # The add_plugin macro is provided by mc_rtc
 add_plugin(EmergencyButtonPlugin "${plugin_SRC}" "${plugin_HDR}")
-target_link_libraries(EmergencyButtonPlugin PUBLIC emergency_button)
+target_link_libraries(EmergencyButtonPlugin PUBLIC rt)
+
+add_subdirectory(tests)
