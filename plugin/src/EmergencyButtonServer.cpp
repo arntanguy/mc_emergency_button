@@ -36,6 +36,8 @@ int main(int argc, char * argv[])
     button = wButton;
   }
   button->required(config("required", true));
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  mc_rtc::log::info("Started");
 
   bip::shared_memory_object shm_obj(bip::open_or_create, "emergency_button_shm", bip::read_write);
   shm_obj.truncate(sizeof(EmergencyButtonData));
@@ -45,11 +47,19 @@ int main(int argc, char * argv[])
   EmergencyButtonData data;
   std::memcpy(region.get_address(), &data, sizeof(EmergencyButtonData));
 
+  mc_rtc::log::info("Check connection status");
+  size_t i = 0;
   while(button->connected())
   {
     data.connected = button->connected();
     data.state = button->emergency();
+    if(i % 100 == 0)
+    {
+      mc_rtc::log::info("connected: {}, emergency: {}", data.connected, data.state);
+    }
     std::memcpy(region.get_address(), &data, sizeof(EmergencyButtonData));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    i++;
   }
 
   mc_rtc::log::critical("Connection to the emergency button lost");
