@@ -96,11 +96,21 @@ void WirelessEmergencyButton::connect(const std::string & serial_port_)
         prev_time_ = clock::now();
         for(int i = 0; i < len; i++)
         {
+          // std::cout << buf[i];
           if(buf[i] == 'e')
+          {
             button = true;
+            // std::cout << "Button is pressed" << std::endl;
+            emergency_ = true;
+          }
           else if(buf[i] == 'r' || buf[i] == 'o')
+          {
+            // std::cout << "Button is released" << std::endl;
             button = false;
+            emergency_ = false;
+          }
         }
+        // std::cout << std::endl;
       }
 
       int ret = -1;
@@ -120,7 +130,6 @@ void WirelessEmergencyButton::connect(const std::string & serial_port_)
         if(c % 10 == 0) ret = write(fd, "L1", 2);
       }
       button_prev = button;
-      emergency_ = static_cast<bool>(button);
       {
         std::lock_guard<std::mutex> lock(timeMutex_);
         time_since_last_received_ = clock::now() - prev_time_;
