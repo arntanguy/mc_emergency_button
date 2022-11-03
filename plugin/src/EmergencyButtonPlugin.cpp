@@ -21,9 +21,30 @@ void EmergencyButtonPlugin::init(mc_control::MCGlobalController & controller, co
 
 void EmergencyButtonPlugin::reset(mc_control::MCGlobalController & controller)
 {
-  shm_obj_ = bip::shared_memory_object(bip::open_or_create, "emergency_button_shm", bip::read_only);
-  shm_region_ = bip::mapped_region(shm_obj_, bip::read_only);
-  data_ = reinterpret_cast<EmergencyButtonData *>(shm_region_.get_address());
+  void * shm_address = nullptr;
+  try
+  {
+    shm_obj_ = bip::shared_memory_object(bip::open_or_create, "emergency_button_shm", bip::read_only);
+
+    shm_region_ = bip::mapped_region(shm_obj_, bip::read_only);
+    shm_address = shm_region_.get_address();
+  }
+  catch(boost::interprocess::interprocess_exception & e)
+  {
+    mc_rtc::log::error(
+        "[EmergencyButtonPlugin] Failed to open shared memory, is the EmergencyButtonServer running?\n{}", e.what());
+  }
+
+  if(shm_address != nullptr)
+  {
+    data_ = reinterpret_cast<EmergencyButtonData *>(shm_address);
+  }
+  else
+  {
+    data_ = new EmergencyButtonData{};
+    data_->connected = false;
+    data_->state = false;
+  }
 
   auto & ctl = controller.controller();
   ctl.datastore().make<bool>("EmergencyButtonPlugin", true);
