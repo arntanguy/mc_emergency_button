@@ -25,7 +25,7 @@ WiredEmergencyButton::WiredEmergencyButton() {}
 
 WiredEmergencyButton::~WiredEmergencyButton()
 {
-  connected_ = false;
+  running_ = false;
   if(th_.joinable())
   {
     th_.join();
@@ -76,7 +76,8 @@ void WiredEmergencyButton::connect()
     bool button_prev = false;
     int c = 0;
 
-    while(connected_)
+    prev_time_ = clock::now();
+    while(running_)
     {
       uint8_t recv;
       bool button = false;
@@ -87,6 +88,7 @@ void WiredEmergencyButton::connect()
       }
       else
       {
+        prev_time_ = clock::now();
         button = is_on[recv & 0x01];
       }
       if(button)
@@ -103,6 +105,7 @@ void WiredEmergencyButton::connect()
       }
       button_prev = button;
       emergency_ = static_cast<bool>(button);
+      time_since_last_received_ = clock::now() - prev_time_;
 
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       c++;

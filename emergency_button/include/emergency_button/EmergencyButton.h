@@ -1,8 +1,19 @@
 #pragma once
 #include <atomic>
+#include <chrono>
+#include <mutex>
 
 namespace emergency_button
 {
+
+using duration_ms = std::chrono::duration<double, std::milli>;
+using duration_us = std::chrono::duration<double, std::micro>;
+
+/** mc_rtc::clock is a clock that is always steady and thus suitable for performance measurements */
+using clock = typename std::conditional<std::chrono::high_resolution_clock::is_steady,
+                                        std::chrono::high_resolution_clock,
+                                        std::chrono::steady_clock>::type;
+
 struct EmergencyButton
 {
   inline void required(bool required)
@@ -32,7 +43,7 @@ struct EmergencyButton
   {
     if(required_)
     {
-      return !connected_ || emergency_;
+      return !connected_ || emergency_ || timeSinceLastReceived() < timeout_;
     }
     else
     {
@@ -40,9 +51,31 @@ struct EmergencyButton
     }
   }
 
+  /**
+   * Connected if we have received new data before timeout and
+   * the emergency button device is connected
+   **/
   inline bool connected() const noexcept
   {
-    return connected_;
+    return timeSinceLastReceived() < timeout_ && connected_;
+  }
+
+  // Timeout in ms
+  inline void timeout(double ms)
+  {
+    timeout_ = ms;
+  }
+
+  inline double timeout() const noexcept
+  {
+    return timeout_;
+  }
+
+  // Time since last received in ms
+  inline double timeSinceLastReceived() const
+  {
+    std::lock_guard<std::mutex> lock(timeMutex_);
+    return time_since_last_received_.count();
   }
 
 protected:
@@ -50,5 +83,9 @@ protected:
                         /// if the button is not plugged in
   std::atomic<bool> emergency_{true};
   std::atomic<bool> connected_{false};
+  clock::time_point prev_time_;
+  duration_ms time_since_last_received_{0}; // time between two successful reading
+  mutable std::mutex timeMutex_;
+  double timeout_ = 1000; // timeout in ms
 };
 } // namespace emergency_button

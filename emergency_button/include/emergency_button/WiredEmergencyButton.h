@@ -13,5 +13,6 @@ struct WiredEmergencyButton : public EmergencyButton
 
 protected:
   std::thread th_;
+  bool running_ = true;
 };
 } // namespace emergency_button
