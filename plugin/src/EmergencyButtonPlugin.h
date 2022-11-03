@@ -35,6 +35,7 @@ private:
   bip::mapped_region shm_region_;
   EmergencyButtonData * data_;
   bool with_gui_ = true;
+  double timeout_ = 1000; // ms
 };
 
 } // namespace mc_plugin

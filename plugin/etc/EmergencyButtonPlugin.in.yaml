@@ -1,4 +1,5 @@
-required: true
+required: false
 gui: true
 type: "wireless"
 port: "/dev/wireless_emergency_button"
+timeout: 1000 #ms

@@ -21,7 +21,7 @@ WirelessEmergencyButton::WirelessEmergencyButton() {}
 
 WirelessEmergencyButton::~WirelessEmergencyButton()
 {
-  connected_ = false;
+  running_ = false;
   if(th_.joinable())
   {
     th_.join();
@@ -86,12 +86,14 @@ void WirelessEmergencyButton::connect(const std::string & serial_port_)
     bool button_prev = true;
     int c = 0;
     bool button = false;
-    while(connected_)
+    prev_time_ = clock::now();
+    while(running_)
     {
       char buf[255];
       int len = read(fd, buf, sizeof(buf));
       if(0 < len)
       {
+        prev_time_ = clock::now();
         for(int i = 0; i < len; i++)
         {
           if(buf[i] == 'e')
@@ -119,6 +121,10 @@ void WirelessEmergencyButton::connect(const std::string & serial_port_)
       }
       button_prev = button;
       emergency_ = static_cast<bool>(button);
+      {
+        std::lock_guard<std::mutex> lock(timeMutex_);
+        time_since_last_received_ = clock::now() - prev_time_;
+      }
 
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       c++;
