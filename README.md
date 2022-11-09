@@ -38,3 +38,42 @@ You can reload the udev rules with
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 ```
+
+## Usage
+
+The plugin uses shared memory to get the status of the emergency button.
+
+First, start the server:
+
+```sh
+EmergencyButtonServer ~/src/mc_emergency_button/plugin/etc/EmergencyButtonPlugin.yaml
+```
+
+This will read the button chosen in the configuration file, and write its state to shared memory.
+
+Then start a controller using the `EmergencyButtonPlugin`
+
+```
+Plugins: [EmergencyButtonPlugin]
+```
+
+You can now read the button status in the datastore as
+
+```cpp
+// true if emergency is pressed
+auto buttonStatus = ctl.datastore().call<bool>("EmergencyButton::State"); 
+```
+
+### A note on configuration
+
+The configuration file looks like:
+
+```yaml
+# When required = true, the button must be connected at all times. If the button is disconnected, it will be considered as an emergency
+# When false, it is only an emergency when the button is connected and is pressed
+required: false
+type: "wireless" # supported types: "wireless" or "wired"
+port: "/dev/wireless_emergency_button" # serial port corresponding to the button
+timeout: 1000 # Time in ms after which the button is considered disconnected if no new status has been received
+gui: true
+```
