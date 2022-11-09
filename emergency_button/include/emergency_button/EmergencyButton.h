@@ -2,7 +2,6 @@
 #include <atomic>
 #include <chrono>
 #include <mutex>
-#include <iostream>
 
 namespace emergency_button
 {
@@ -42,7 +41,6 @@ struct EmergencyButton
    */
   inline bool emergency() const noexcept
   {
-    // std::cout << "connected: " << connected_ << ", emergency: " << emergency_ << ", timeout: " << (timeSinceLastReceived() < timeout_) << std::endl;
     if(required_)
     {
       return !connected_ || emergency_ || timeSinceLastReceived() > timeout_;
