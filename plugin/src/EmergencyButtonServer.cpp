@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
 
   mc_rtc::log::info("Check connection status");
   size_t i = 0;
-  while(button->connected())
+  while(true)
   {
     data.connected = button->connected();
     data.state = button->emergency();
