@@ -45,10 +45,14 @@ int main(int argc, char * argv[])
   bip::mapped_region region(shm_obj, bip::read_write);
 
   EmergencyButtonData data;
+  data.connected = button->connected();
+  data.state = button->emergency();
   std::memcpy(region.get_address(), &data, sizeof(EmergencyButtonData));
 
   mc_rtc::log::info("Check connection status");
   size_t i = 0;
+  bool was_not_connected = !data.connected;
+  bool was_emergency = data.state;
   while(true)
   {
     data.connected = button->connected();
@@ -57,6 +61,23 @@ int main(int argc, char * argv[])
     {
       mc_rtc::log::info("connected: {}, emergency: {}", data.connected, data.state);
     }
+    auto check_state = [](bool current, bool & was, const char * bad_msg, const char * good_msg) {
+      if(current == was)
+      {
+        return;
+      }
+      was = current;
+      if(current)
+      {
+        mc_rtc::log::critical(bad_msg);
+      }
+      else
+      {
+        mc_rtc::log::success(good_msg);
+      }
+    };
+    check_state(!data.connected, was_not_connected, "Lost connection", "Recovered connection");
+    check_state(data.state, was_emergency, "Emergency triggered", "Emergency off");
     std::memcpy(region.get_address(), &data, sizeof(EmergencyButtonData));
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     i++;
