@@ -47,6 +47,10 @@ void EmergencyButtonPlugin::reset(mc_control::MCGlobalController & controller)
   }
 
   auto & ctl = controller.controller();
+  if(ctl.datastore().has("EmergencyButtonPlugin"))
+  {
+    return;
+  }
   ctl.datastore().make<bool>("EmergencyButtonPlugin", true);
   ctl.datastore().make_call("EmergencyButtonPlugin::Connected", [this]() -> bool { return data_->connected; });
   ctl.datastore().make_call("EmergencyButtonPlugin::State", [this]() -> bool { return data_->state; });
